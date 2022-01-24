@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using RelacionTablas.Data;
 using RelacionTablas.Dtos;
 using RelacionTablas.Models;
+using RelacionTablas.Repository.Interfaces;
 
 namespace RelacionTablas.Controllers
 {
@@ -17,17 +18,18 @@ namespace RelacionTablas.Controllers
     {
         private readonly ApplicationContext _context;
         private readonly IMapper _mapper;
-
-        public PlayerController(ApplicationContext context, IMapper mapper)
+        private readonly IPlayerRepository _repo;
+        public PlayerController(ApplicationContext context, IMapper mapper, IPlayerRepository repo)
         {
             _mapper = mapper;
             _context = context;
+            _repo = repo;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var playersDto = await _context.Players.Include(x => x.Team).Select(p => _mapper.Map<GetPlayersDto>(p)).ToListAsync();
+            var playersDto = await _repo.GetPlayersDtoAsync();
 
             return Ok(playersDto);
         }
@@ -36,12 +38,8 @@ namespace RelacionTablas.Controllers
         public async Task<IActionResult> Get(int id)
         {
             if(id <= 0)return BadRequest("Invalid id");
-
-            var player = await _context.Players.Include(x => x.Team).FirstOrDefaultAsync(p => p.Id == id);
-
-            if(player == null)return NotFound("Player not found");
             
-            var playerDto = _mapper.Map<GetPlayersDto>(player);
+            var playerDto = await _repo.GetPlayerDtoByIdAsync(id);
 
             return Ok(playerDto);
         }
@@ -50,12 +48,8 @@ namespace RelacionTablas.Controllers
         public async Task<IActionResult> Post(PostPlayerDto playerDto)
         {
             if(playerDto == null)return BadRequest("Invalid player");
-
-            var player = _mapper.Map<Player>(playerDto);
-
-            await _context.Players.AddAsync(player);
             
-            if(await _context.SaveChangesAsync() > 0)return CreatedAtAction(nameof(Get), new {id = player.Id}, player);
+            if(await _repo.CreatePlayerAsync(playerDto) > 0)return CreatedAtAction(nameof(Get), new {id = playerDto.Id}, playerDto);
             return BadRequest("could not create player");
         }
 
@@ -64,13 +58,8 @@ namespace RelacionTablas.Controllers
         {
             if(id != playerDto.Id)return BadRequest("The ids are not the same");
 
-            var player = await _context.Players.FindAsync(id);
+            if(await _repo.EditPlayerAsync(id, playerDto) > 0)return Ok(playerDto);
 
-            if(player == null)NotFound("Player to update not found");
-
-            _mapper.Map(playerDto, player);
-
-            if(await _context.SaveChangesAsync() > 0)return Ok(player);
             return BadRequest("Player could not be edited");
         }   
 
@@ -79,13 +68,8 @@ namespace RelacionTablas.Controllers
         {
             if(id <= 0)return BadRequest("Invalid id");
 
-            var player = await _context.Players.FindAsync(id);
-
-            if(player == null)return NotFound("Player to delete not found");
-
-            _context.Players.Remove(player);
-
-            if(await _context.SaveChangesAsync() > 0)return Ok("player was deleted");
+            if(await _repo.DeletePlayerAsync(id) > 0)return Ok("player was deleted");
+            
             return BadRequest("Could not delete the player");
         }
     }
