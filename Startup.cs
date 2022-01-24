@@ -13,6 +13,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RelacionTablas.Data;
 using Microsoft.OpenApi.Models;
+using RelacionTablas.Repository;
+using RelacionTablas.Repository.Interfaces;
 
 namespace RelacionTablas
 {
@@ -31,6 +33,8 @@ namespace RelacionTablas
             services.AddControllers();
             services.AddDbContext<ApplicationContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+            services.AddScoped<ITeamRepository, TeamRepository>();
             
             services.AddControllers().AddNewtonsoftJson(opt=>{
                 opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;

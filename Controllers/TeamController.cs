@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using RelacionTablas.Data;
 using RelacionTablas.Dtos;
 using RelacionTablas.Models;
+using RelacionTablas.Repository.Interfaces;
 
 namespace RelacionTablas.Controllers
 {
@@ -15,19 +16,16 @@ namespace RelacionTablas.Controllers
     [Route("api/[controller]")]
     public class TeamController : ControllerBase
     {
-        private readonly ApplicationContext _context;
-        private readonly IMapper _mapper;
-
-        public TeamController(ApplicationContext context, IMapper mapper)
+        private readonly ITeamRepository _repo;
+        public TeamController(ITeamRepository repo)
         {
-            _mapper = mapper;
-            _context = context;
+            _repo = repo;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get() 
         {
-            var teamsDto = await _context.Teams.Include(x => x.Players).Select(t => _mapper.Map<GetTeamsDto>(t)).ToListAsync();
+            var teamsDto = await _repo.GetTeamsDtoAsync();
 
             return Ok(teamsDto);       
         }
@@ -37,11 +35,7 @@ namespace RelacionTablas.Controllers
         {
             if(id <= 0)return BadRequest("Invalid id");
 
-            var team = await _context.Teams.Include(x => x.Players).FirstOrDefaultAsync(t => t.Id == id);
-
-            if(team == null)return NotFound("Team not found");
-
-            var teamDto = _mapper.Map<GetTeamsDto>(team);
+            var teamDto = await _repo.GetTeamByIdAsync(id);
             
             return Ok(teamDto);            
         }
@@ -51,11 +45,7 @@ namespace RelacionTablas.Controllers
         {
             if(teamDto == null)return BadRequest("Invalid team");
 
-            var team = _mapper.Map<Team>(teamDto);
-
-            await _context.Teams.AddAsync(team);
-
-            if(await _context.SaveChangesAsync() > 0)return CreatedAtAction(nameof(Get), new {id = team.Id}, team);
+            if(await _repo.CreateTeamAsync(teamDto) > 0)return CreatedAtAction(nameof(Get), new {id = teamDto.Id}, teamDto);
 
             return BadRequest("The team could be not created");
         }
@@ -63,15 +53,10 @@ namespace RelacionTablas.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(int id, PostTeamDto teamDto)
         {
-            if(id != teamDto.Id)return BadRequest("Ids are not the same");
-
-            var team = await _context.Teams.FindAsync(id);
-
+            if(id != teamDto.Id) return BadRequest("Ids are not the same");
             if(teamDto == null) return BadRequest("Invalid team");
 
-            _mapper.Map(teamDto, team);
-
-            if(await _context.SaveChangesAsync() > 0)return Ok(team.Name);
+            if(await _repo.EditTeamAsync(id, teamDto) > 0)return Ok(teamDto.Name);
 
             return BadRequest("The team could be not edited");
         }
@@ -81,14 +66,7 @@ namespace RelacionTablas.Controllers
         {
             if(id <= 0)return BadRequest("Invalid id");
 
-            var team = await _context.Teams.Include(x => x.Players).FirstOrDefaultAsync(x => x.Id == id);
-
-            if(team == null)return NotFound("The team not found");
-            
-            _context.RemoveRange(team.Players);
-            _context.Remove(team);
-
-            if(await _context.SaveChangesAsync() > 0)return Ok("The team was removed from the db");
+            if(await _repo.DeleteTeamAsync(id) > 0)return Ok("The team was removed from the db");
 
             return BadRequest("The team could be not deleted");
         }
