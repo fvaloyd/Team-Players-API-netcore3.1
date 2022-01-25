@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RelacionTablas.Data;
@@ -13,6 +14,7 @@ using RelacionTablas.Repository.Interfaces;
 namespace RelacionTablas.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class TeamController : ControllerBase
     {

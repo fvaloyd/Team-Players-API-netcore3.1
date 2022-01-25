@@ -138,3 +138,4 @@ C:\Users\franc\Documents\Projects\.NET\RelacionTablas\obj\Debug\netcoreapp3.1\Re
 C:\Users\franc\Documents\Projects\.NET\RelacionTablas\obj\Debug\netcoreapp3.1\RelacionTablas.dll
 C:\Users\franc\Documents\Projects\.NET\RelacionTablas\obj\Debug\netcoreapp3.1\RelacionTablas.pdb
 C:\Users\franc\Documents\Projects\.NET\RelacionTablas\obj\Debug\netcoreapp3.1\RelacionTablas.genruntimeconfig.cache
+C:\Users\franc\Documents\Projects\.NET\RelacionTablas\bin\Debug\netcoreapp3.1\Microsoft.AspNetCore.Authentication.JwtBearer.dll

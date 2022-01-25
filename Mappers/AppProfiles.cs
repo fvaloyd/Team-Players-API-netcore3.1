@@ -21,6 +21,11 @@ namespace RelacionTablas.Mappers
             CreateMap<PostTeamDto, Team>();
             CreateMap<Team, GetTeamsDto>()
                         .ForMember(dest => dest.PlayersName, opt => opt.MapFrom(src => src.Players.Select(x => x.Name)));
+
+            //User mapper
+            CreateMap<UserRegisterDto, User>();
+            CreateMap<UserLoginDto, User>();
+            CreateMap<User, UserDto>();
         }
     }
 }

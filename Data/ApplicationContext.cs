@@ -13,6 +13,7 @@ namespace RelacionTablas.Data
 
         public DbSet<Team> Teams { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<User> Users { get; set; }
 
     }
 }

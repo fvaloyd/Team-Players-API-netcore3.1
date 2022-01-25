@@ -15,6 +15,11 @@ using RelacionTablas.Data;
 using Microsoft.OpenApi.Models;
 using RelacionTablas.Repository;
 using RelacionTablas.Repository.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using RelacionTablas.Services.Interfaces;
+using RelacionTablas.Services;
 
 namespace RelacionTablas
 {
@@ -36,10 +41,24 @@ namespace RelacionTablas
 
             services.AddScoped<ITeamRepository, TeamRepository>();
             services.AddScoped<IPlayerRepository, PlayerRepository>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IAuthRepository, AuthRepository>();
             
             services.AddControllers().AddNewtonsoftJson(opt=>{
                 opt.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             });
+
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(opt =>
+                opt.TokenValidationParameters = new TokenValidationParameters{
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(Configuration["Token"])),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                }
+            );
+
 
             services.AddSwaggerGen(options =>
             {
@@ -77,6 +96,7 @@ namespace RelacionTablas
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
