@@ -16,13 +16,9 @@ namespace RelacionTablas.Controllers
     [Route("api/[controller]")]
     public class PlayerController : ControllerBase
     {
-        private readonly ApplicationContext _context;
-        private readonly IMapper _mapper;
         private readonly IPlayerRepository _repo;
-        public PlayerController(ApplicationContext context, IMapper mapper, IPlayerRepository repo)
+        public PlayerController(IPlayerRepository repo)
         {
-            _mapper = mapper;
-            _context = context;
             _repo = repo;
         }
 
